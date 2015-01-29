@@ -1,0 +1,19 @@
+{
+    "name": "bhargav2785/WebPageTester",
+    "description": "A simple script to test page performance using webpagetest APIs",
+    "minimum-stability": "stable",
+    "license": "WTF License",
+    "authors": [
+        {
+            "name": "Bhargav Vadher",
+            "email": "bhargav@bhargavvadher.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "geraintluff/jsv4": "dev-master"
+    },
+    "autoload": {
+        "classmap": ["src"]
+    }
+}

@@ -1,0 +1,55 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "WebPageTest API check",
+    "description": "WebPageTest API response",
+    "type": "object",
+    "properties": {
+        "data": {
+            "description": "the container object",
+            "type": "object",
+            "properties": {
+                "runs": {
+                    "type": "array",
+                    "description": "individual run",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "firstView": {
+                                "description": "firstView of an individual run",
+                                "type": "object",
+                                "properties": {
+                                    "loadTime": {
+                                        "description": "page load time",
+                                        "type": "integer",
+                                        "maximum": 5000
+                                    }
+                                }
+                            },
+                            "required": [
+                                "firstView"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "runs"
+                ]
+            }
+        },
+        "statusCode": {
+            "description": "Status code returned",
+            "type": "number",
+            "enum": [200]
+        },
+        "statusText": {
+            "description": "Status text returned",
+            "type": "string",
+            "enum": ["Test Complete"]
+        },
+        "required": [
+            "data",
+            "statusCode",
+            "statusText"
+        ]
+    }
+}
