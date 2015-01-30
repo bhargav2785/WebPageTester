@@ -1,2 +1,2 @@
 /Users/bvadher/Sites/WebPageTester/src/examples/file_mode.txt
-http://www.example.com/urls.txt
+https://raw.githubusercontent.com/bhargav2785/WebPageTester/master/examples/remote_file_mode.txt
