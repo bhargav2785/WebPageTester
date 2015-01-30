@@ -1,5 +1,4 @@
 
 .idea/
 vendor/
-src/_static/*
 composer.lock

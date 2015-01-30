@@ -16,7 +16,7 @@ use Helpers\TestOptions;
  * -u, -f, -m, -h -s
  *
  * -u   -> direct url testing
- * -f   -> file testing with single url in it
+ * -f   -> file testing with a list of urls in it
  * -m   -> file testing with multiple file/url references in it. Each of those file/url might have multiple urls in it
  */
 $shortOpts = "u:f:m:h::s:";
