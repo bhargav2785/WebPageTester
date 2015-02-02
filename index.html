@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Webpagetester by bhargav2785</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Webpagetester</h1>
+          <h2>Automatic testing using webpagetest APIs</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/bhargav2785/WebPageTester/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/bhargav2785/WebPageTester/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/bhargav2785/WebPageTester" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a id="webpagetester" class="anchor" href="#webpagetester" aria-hidden="true"><span class="octicon octicon-link"></span></a>WebPageTester</h1>
+
+<p>Automatic testing using webpagetest APIs &amp; PHP</p>
+
+<h2>
+<a id="download" class="anchor" href="#download" aria-hidden="true"><span class="octicon octicon-link"></span></a>Download</h2>
+
+<h4>
+<a id="1-install-composer-if-you-havent-already" class="anchor" href="#1-install-composer-if-you-havent-already" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. Install composer if you haven't already</h4>
+
+<pre><code>&gt; curl -sS https://getcomposer.org/installer | php
+</code></pre>
+
+<h4>
+<a id="2-clone-the-webpagetest-repository" class="anchor" href="#2-clone-the-webpagetest-repository" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. Clone the WebPageTest repository</h4>
+
+<pre><code>&gt; git clone https://github.com/bhargav2785/WebPageTester.git
+</code></pre>
+
+<h2>
+<a id="configuration" class="anchor" href="#configuration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>Just set the MongoDB details in the file <strong>src/config.ini</strong></p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<pre><code>&gt; cd path_to_WebPageTester
+&gt; composer install
+&gt; php src/Scripts/install.php
+</code></pre>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<pre><code>php src/Scripts/test.php [options]
+</code></pre>
+
+<h2>
+<a id="options" class="anchor" href="#options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Options</h2>
+
+<pre><code>php src/Scripts/test.php --help
+</code></pre>
+
+<ul>
+<li>  <strong>-h, --help</strong> to get the help about this tool.</li>
+<li>  <strong>-u</strong> url mode. Pass the url to test.</li>
+<li>  <strong>-f</strong> file mode. Pass the file path to test. File can contain multiple urls to test, one on ech line.</li>
+<li>  <strong>-m</strong> master file mode. Pass the master file path to test. Master file can have multiple file names in it. One on each line. Each of those path/url can have a list of test urls.</li>
+<li>  <strong>--save</strong> to save an initial test result into the database.</li>
+<li>  <strong>--check</strong> to check/validate the response coming from WPT suite.</li>
+<li>  <strong>--download</strong> to download all the results/documents for all the test in current run.</li>
+<li>  <strong>-s</strong> path to a spec file. To be used with -u option only when --save param is provided.</li>
+<li>  <strong>--options</strong> to provide custom options for a test(e.g --options=fvonly=1,private=1).</li>
+</ul>
+
+<h2>
+<a id="modes" class="anchor" href="#modes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Modes</h2>
+
+<p><strong>URL Mode:</strong> Use -u to invoke URL mode. In this mode you can execute any single url directly from the command line. If you want to validate the response you can pass the --check option. In this mode if you pass --check mode then you have to pass in the -s option as well because the validator needs to know where is the spec file located.</p>
+
+<p><strong><em>Examples:</em></strong></p>
+
+<pre><code>&gt; php src/Scripts/test.php -u http://google.com
+&gt; php src/Scripts/test.php -u http://google.com --save
+&gt; php src/Scripts/test.php -u http://google.com --save --download
+&gt; php src/Scripts/test.php -u http://google.com --save --download --check -s path/to/spec/file
+&gt; php src/Scripts/test.php -u http://google.com --save --download --check -s path/to/spec/file --options=private=1,runs=5
+</code></pre>
+
+<p><strong>File Mode:</strong> Use -f to invoke file mode. In this mode you can execute a file from the command line. The file can contain a list of URLs to be tested follwed by option list followed by path to a spec file. So each row is made of three parts 1) test url 2) test options and 3) spec file for the test results. All three parts are separated by a single space character. You can use --check, --save and --download options in this mode. Internally each row of the file will be tested against the URL mode mentioned above. Example file can be found <a href="https://raw.githubusercontent.com/bhargav2785/WebPageTester/master/examples/file_mode.txt">here</a>.</p>
+
+<p><strong><em>Examples:</em></strong></p>
+
+<pre><code>&gt; php src/Scripts/test.php -f /www/wpt/tests/urls.txt
+&gt; php src/Scripts/test.php -f /www/wpt/tests/urls.txt --save
+&gt; php src/Scripts/test.php -f /www/wpt/tests/urls.txt --save --check
+&gt; php src/Scripts/test.php -f /www/wpt/tests/urls.txt --save --check --download
+</code></pre>
+
+<p><strong>Master File Mode:</strong> Use -m to invoke master file mode. In this mode you can execute a master file from the command line. The master file can contain a list of other files/paths. Each row can be a path to the file or a remote URL which contains a list of URLs to be tested. This is basically a convenient method to run multiple files with tests in one shot. You can use --check, --save and --download options in this mode. Internally each row of the master file will be tested against the File mode mentioned above. Example file can be found <a href="https://raw.githubusercontent.com/bhargav2785/WebPageTester/master/examples/master_mode.txt">here</a>.</p>
+
+<p><strong><em>Examples:</em></strong></p>
+
+<pre><code>&gt; php src/Scripts/test.php -m src/examples/local_master_file.txt
+&gt; php src/Scripts/test.php -m src/examples/local_master_file.txt --save
+&gt; php src/Scripts/test.php -m src/examples/local_master_file.txt --save --check
+&gt; php src/Scripts/test.php -m src/examples/local_master_file.txt --save --check --download
+</code></pre>
+
+<h2>
+<a id="bugssuggestions" class="anchor" href="#bugssuggestions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bugs/Suggestions</h2>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>WTF license</p>
+
+<h2>
+<a id="change-log" class="anchor" href="#change-log" aria-hidden="true"><span class="octicon octicon-link"></span></a>Change log</h2>
+
+<p><strong>1.0</strong> 2014/12/20 initial version </p>
+        </section>
+
+        <footer>
+          Webpagetester is maintained by <a href="https://github.com/bhargav2785">bhargav2785</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
