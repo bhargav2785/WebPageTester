@@ -197,9 +197,9 @@ class CommonHelper
 	/**
 	 * @return null|MySqlHelper
 	 */
-	public function getMysqlObj() {
+	public function getMysqlObj($dbName = null) {
 		if (is_null($this->mysqlObj)) {
-			$this->setMysqlObj(new MySqlHelper());
+			$this->setMysqlObj(new MySqlHelper($dbName));
 		}
 
 		return $this->mysqlObj;

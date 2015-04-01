@@ -13,16 +13,28 @@ use Helpers\MySqlPDO;
 class MySqlHelper
 {
 	public $connection = null;
+	private $dbName = null;
+
+	/**
+	 * @param null $dbName
+	 */
+	public function __construct($dbName = null) {
+		$this->dbName = $dbName;
+	}
 
 	/**
 	 * @return null|\PDO
 	 */
 	public function getConnection() {
 		if (is_null($this->connection)) {
-			$this->connection = MySqlPDO::getInstance();
+			$this->connection = MySqlPDO::getInstance($this->dbName);
 		}
 
 		return $this->connection;
+	}
+
+	public function resetConnection() {
+		$this->connection = null;
 	}
 
 	/**
@@ -58,15 +70,7 @@ class MySqlHelper
 	public function getAllTableNamesFromSchema($schema) {
 		$sql       = "show tables from `{$schema}`;";
 		$statement = $this->getConnection()->query($sql);
-		$rows      = $statement->fetchAll(\PDO::FETCH_ASSOC);
-
-		$tables    = array();
-		$schemaKey = "Tables_in_{$schema}";
-		foreach ($rows as $key => $row) {
-			if (isset($schemaKey)) {
-				array_push($tables, $row[$schemaKey]);
-			}
-		}
+		$tables    = $statement->fetchAll(\PDO::FETCH_COLUMN);
 
 		return $tables;
 	}

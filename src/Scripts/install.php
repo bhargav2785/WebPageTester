@@ -12,6 +12,7 @@ use Helpers\CommonHelper;
 use Helpers\MySqlHelper;
 use Helpers\Configs;
 
+$dbName       = Configs::get('mysqldb');
 $commonHelper = new CommonHelper();
 $mysqlHelper  = $commonHelper->getMysqlObj();
 
@@ -28,9 +29,8 @@ if ($connection instanceof \PDO) {
 }
 
 // CHECK if db already exist
-$dbName = Configs::get('mysqldb');
 if ($mysqlHelper->databaseExist($dbName)) {
-	echo "database already exist...\n";
+	echo "Database already exist... Drop the old database and try again.\n";
 	exit(1);
 }
 
@@ -43,6 +43,11 @@ if (false !== $success) {
 	echo "failed creating the database...\n";
 	exit(1);
 }
+
+// RESET the MySQL connection to pick up the new database we just created.
+$mysqlHelper->resetConnection();
+$commonHelper->setMysqlObj(null);
+$mysqlHelper = $commonHelper->getMysqlObj($dbName);
 
 // CHECK if all tables are created
 $tableNameTests    = 'tests';
@@ -77,11 +82,13 @@ function validateConfigs() {
 		$valid = false;
 	} else if (empty($key) && $wptHost === 'http://www.webpagetest.org') {
 		echo "`key` is required for public WPT instance(http://www.webpagetest.org). Exiting...\n";
+		$valid = false;
 	} else {
-		echo str_pad("Host: ", 6, " ", STR_PAD_LEFT) . $host . "\n";
-		echo str_pad("Port: ", 6, " ", STR_PAD_LEFT) . $port . "\n";
-		echo str_pad("Db: ", 6, " ", STR_PAD_LEFT) . $db . "\n";
-		echo str_pad("Key: ", 6, " ", STR_PAD_LEFT) . $key . "\n";
+		echo str_pad("MySQL Host: ", 6, " ", STR_PAD_LEFT) . $host . "\n";
+		echo str_pad("MySQL Port: ", 6, " ", STR_PAD_LEFT) . $port . "\n";
+		echo str_pad("MySQL Db: ", 6, " ", STR_PAD_LEFT) . $db . "\n";
+		echo str_pad("WPT Key: ", 6, " ", STR_PAD_LEFT) . $key . "\n";
+		echo str_pad("WPT Host: ", 6, " ", STR_PAD_LEFT) . $wptHost . "\n";
 
 		$answer = readline("\nPlease confirm the details above. Are those correct?(y/n): ");
 

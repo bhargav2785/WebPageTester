@@ -6,7 +6,7 @@ CREATE DATABASE IF NOT EXISTS `webpagetest`
 	DEFAULT CHARACTER SET = 'utf8';
 
 -- Create a new table webpagetest.tests
-CREATE TABLE `tests` (
+CREATE TABLE `webpagetest`.`tests` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `test_id` varchar(100) NOT NULL,
   `status_code` int(5) unsigned NOT NULL,
@@ -122,7 +122,7 @@ CREATE TABLE `tests` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Create a new table webpagetest.summary
-CREATE TABLE `summary` (
+CREATE TABLE `webpagetest`.`summary` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `testid` varchar(100) NOT NULL,
   `date` date NOT NULL,
@@ -280,7 +280,7 @@ CREATE TABLE `summary` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- Create a new table webpagetest.requests
-CREATE TABLE `requests` (
+CREATE TABLE `webpagetest`.`requests` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `testid` varchar(200) NOT NULL,
   `date` date NOT NULL,

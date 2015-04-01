@@ -16,17 +16,17 @@ class MySqlPDO
 	/**
 	 * @return null|\PDO
 	 */
-	public static function getInstance() {
+	public static function getInstance($dbName = null) {
 		if (is_null(self::$instance)) {
 			$configs = self::_getConfigs();
 
 			$host     = $configs['host'];
-			$db       = $configs['db'];
 			$username = $configs['user'];
 			$password = $configs['password'];
+			$dbString = is_null($dbName) ? '' : "dbname={$dbName}";
 
 			try {
-				self::$instance = new \PDO("mysql:host={$host};charset=utf8", $username, $password);
+				self::$instance = new \PDO("mysql:host={$host}{$dbString};charset=utf8", $username, $password);
 			} catch (\PDOException $e) {
 				$message = $e->getMessage();
 				echo $message;
