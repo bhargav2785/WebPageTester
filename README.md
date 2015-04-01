@@ -14,7 +14,7 @@ Automatic testing using webpagetest APIs & PHP
 
 ~~~
 ## Configuration
-Just set the MongoDB details in the file **src/config.ini**
+Just set the required config details in the file **src/config.ini**
 ## Installation
 
 ~~~
