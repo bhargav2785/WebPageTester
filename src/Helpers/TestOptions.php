@@ -15,9 +15,12 @@ namespace Helpers;
  */
 class TestOptions
 {
-	const API_BASE_URL_RUN_TEST = 'http://www.webpagetest.org/runtest.php';
-	const API_BASE_URL_STATUS_CHECK = 'http://www.webpagetest.org/testStatus.php';
-
+	/**
+	 * @var $options
+	 * Available input options for test
+	 *
+	 * @see https://sites.google.com/a/webpagetest.org/docs/advanced-features/webpagetest-restful-apis#TOC-Parameters
+	 */
 	private $options = array(
 		'url'           => array('value' => null, 'desc' => 'required	URL to be tested'),
 		'label'         => array('value' => null, 'desc' => 'optional	Label for the test'),
@@ -64,18 +67,41 @@ class TestOptions
 	);
 	private $filteredOptions = array();
 
+	/**
+	 * @param       $url
+	 * @param array $options
+	 *
+	 * @return bool
+	 * @throws \Helpers\TestOptionsException
+	 */
 	public function isValidRequest($url, array $options = array()) {
 		return $this->isValidUrl($url) && $this->hasValidOptions($options);
 	}
 
+	/**
+	 * @param $url
+	 *
+	 * @return mixed
+	 */
 	public function isValidUrl($url) {
 		return filter_var($url, FILTER_VALIDATE_URL);
 	}
 
+	/**
+	 * @param $option
+	 *
+	 * @return bool
+	 */
 	public function isValidOption($option) {
 		return array_key_exists($option, $this->getOptions());
 	}
 
+	/**
+	 * @param array $options
+	 *
+	 * @return bool
+	 * @throws \Helpers\TestOptionsException
+	 */
 	public function hasValidOptions(array $options = array()) {
 		$valid = true;
 
@@ -88,6 +114,9 @@ class TestOptions
 		return $valid;
 	}
 
+	/**
+	 * @param array $overridedOptions
+	 */
 	public function setUrlOptions(array $overridedOptions = array()) {
 		foreach ($this->getOptions() as $defaultOptionKey => $defaultOptionValue) {
 			$this->filteredOptions[$defaultOptionKey] = isset($overridedOptions[$defaultOptionKey])
@@ -96,17 +125,38 @@ class TestOptions
 		}
 	}
 
+	/**
+	 * @return array|mixed
+	 */
 	public function requestTestUrl() {
-		$base            = self::API_BASE_URL_RUN_TEST;
+		$base            = $this->getWptTestUrl();
 		$filteredOptions = $this->getFilteredOptions();
-		$requestTime     = new \MongoDate();
+		$requestTime     = date("Y-m-d H:i:s");
 
 		$urlParams  = http_build_query($filteredOptions);
 		$requestUrl = "{$base}?{$urlParams}";
 
 		try {
-			$jsonResponse            = file_get_contents($requestUrl);
-			$response                = json_decode($jsonResponse, true);
+			$jsonResponse = file_get_contents($requestUrl);
+
+			if (false === $jsonResponse) {
+				echo "\n\nERROR: Something went wrong. No response returned from the host\n";
+				exit(1);
+			}
+
+			$response = json_decode($jsonResponse, true);
+
+			if (isset($response['statusCode']) && $response['statusCode'] !== 200) {
+				echo "\n\nERROR: There was an error in your request. See below for more details\n";
+				echo "\nRequest URL: \n";
+				echo str_repeat("=", 50) . "\n";
+				echo "\n{$requestUrl}\n";
+				echo "\nResponse: \n";
+				echo str_repeat("=", 50) . "\n";
+				print_r($response);
+				exit(1);
+			}
+
 			$response['options']     = $filteredOptions;
 			$response['requestTime'] = $requestTime;
 			$response['processed']   = false;
@@ -118,8 +168,13 @@ class TestOptions
 		return $response;
 	}
 
+	/**
+	 * @param $testId
+	 *
+	 * @return array|mixed
+	 */
 	public function getStatusByTestId($testId) {
-		$base = self::API_BASE_URL_STATUS_CHECK;
+		$base = $this->getWptStatusCheckUrl();
 		$url  = "{$base}?test={$testId}&f=json";
 
 		try {
@@ -139,6 +194,18 @@ class TestOptions
 
 	public function getFilteredOptions() {
 		return $this->filteredOptions;
+	}
+
+	public function getWptHost() {
+		return Configs::get('wpt.host');
+	}
+
+	public function getWptTestUrl() {
+		return $this->getWptHost() . "/runtest.php";
+	}
+
+	public function getWptStatusCheckUrl() {
+		return $this->getWptHost() . "/testStatus.php";
 	}
 }
 

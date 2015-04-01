@@ -31,14 +31,6 @@ class Configs
 		return isset(self::$configs[$key]) ? self::$configs[$key] : null;
 	}
 
-	public function getMongoConnectionConfigs() {
-		return array(
-			'host' => self::get('mongohost'),
-			'port' => self::get('mongoport'),
-			'db'   => self::get('mongodb'),
-		);
-	}
-
 	public function getApiKey() {
 		return self::get('apikey');
 	}

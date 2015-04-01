@@ -6,10 +6,9 @@
  * Time: 11:18 PM
  */
 
-// script to download all WPT data from server and store it into the mongodb
+// script to download all WPT data from server and store it into the mysql database
 
-date_default_timezone_set('America/Los_Angeles');
-require_once dirname(dirname(dirname(__FILE__))) . '/vendor/autoload.php';
+require_once '__init.script.php';
 
 use Helpers\DownloadHelper;
 

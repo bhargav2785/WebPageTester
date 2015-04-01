@@ -6,8 +6,7 @@
  * Time: 8:54 PM
  */
 
-date_default_timezone_set('America/Los_Angeles');
-require_once dirname(dirname(dirname(__FILE__))) . '/vendor/autoload.php';
+require_once '__init.script.php';
 
 use Helpers\Configs;
 use Helpers\TestOptions;
@@ -22,19 +21,17 @@ use Helpers\TestOptions;
 $shortOpts = "u:f:m:h::s:";
 
 /**
- * --help, --save, --check, --download, --options
+ * --help, --save, --check, --options
  *
  * --help       -> to display the help about this tool
- * --save       -> to save an initial request json payload
+ * --save       -> to save an initial test request json payload with options used
  * --check      -> to validate the response against json-schema validator
- * --download   -> to download all results into the database
  * --options    -> to provide test options for -u type test when --check is present
  */
 $longOpts = array(
 	'help',
 	'save',
 	'check',
-	'download',
 	'options:'
 );
 
@@ -53,13 +50,9 @@ if ($optsCount > 0) {
 		finish(true);
 	}
 
-	// --save for saving data into the db
+	// --save for downloading and saving response data into the db
 	if (isset($opts['save'])) {
 		$wpt->setNeedToSave(true);
-	}
-
-	// --download for downloading result files into db after verification
-	if (isset($opts['download'])) {
 		$wpt->setNeedToDownload(true);
 	}
 
@@ -128,7 +121,7 @@ function debug($message, $type = null) {
 }
 
 function printUsage() {
-	debug("\nUsage: run.php [-u http://www.example.com] [-f urls.txt] [-m master.txt]");
+	debug("\nUsage: run.php [-u http://www.example.com] [-f urls.txt] [-m master.txt] [--save|--check|--options]");
 	debug("     use -h or --help for help.");
 	debug("     use -u for a single url test");
 	debug("     use -f for multiple url test in a single file.");
@@ -136,7 +129,6 @@ function printUsage() {
 	debug("     use -s for spec file location. Only to be used when both (-u and --check) are provided.");
 	debug("     use --save to save request results into the database.");
 	debug("     use --check to validate response against json-schema validator.");
-	debug("     use --download to download & save response results after verification.");
 	debug("     use --options to supply test options to WebPageTest tool.");
 }
 

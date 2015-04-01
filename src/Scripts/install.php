@@ -6,72 +6,77 @@
  * Time: 11:15 PM
  */
 
-date_default_timezone_set('America/Los_Angeles');
-require_once dirname(dirname(dirname(__FILE__))) . '/vendor/autoload.php';
+require_once '__init.script.php';
 
 use Helpers\CommonHelper;
-use Helpers\MongoHelper;
+use Helpers\MySqlHelper;
 use Helpers\Configs;
 
-$collections = array(
-	MongoHelper::DB_COLLECTION_NAME_TESTS,
-	MongoHelper::DB_COLLECTION_NAME_TEST_RESULTS,
-	MongoHelper::DB_COLLECTION_NAME_TEST_SUMMARIES,
-	MongoHelper::DB_COLLECTION_NAME_TEST_REQUESTS
-);
-
 $commonHelper = new CommonHelper();
-$mongoHelper  = $commonHelper->getMongoObj();
+$mysqlHelper  = $commonHelper->getMysqlObj();
 
 // VALIDATE configs
 validateConfigs();
 
-// CONNECT to mongo server
-$mongo = $mongoHelper->getMongoInstance();
-if ($mongo instanceof MongoClient) {
-	echo "connected to the mongo server...\n";
+// CONNECT to mysql server
+$connection = $mysqlHelper->getConnection();
+if ($connection instanceof \PDO) {
+	echo "connected to the mysql server...\n";
 } else {
-	echo "could not connect to the mongo server...\n";
+	echo "could not connect to the mysql server...\n";
 	exit(1);
 }
 
-// CHECK if db is created or not, if not create one
-$dbName = Configs::get('mongodb');
-$db     = $mongoHelper->createDb($dbName);
-if ($db instanceof MongoDB) {
+// CHECK if db already exist
+$dbName = Configs::get('mysqldb');
+if ($mysqlHelper->databaseExist($dbName)) {
+	echo "database already exist...\n";
+	exit(1);
+}
+
+// CREATE database
+$sqlFilePath = SCRIPTS_PATH . '/webpagetest.sql';
+$success     = $mysqlHelper->executeSqlFile($sqlFilePath);
+if (false !== $success) {
 	echo "database `{$dbName}` created...\n";
 } else {
 	echo "failed creating the database...\n";
 	exit(1);
 }
 
-// CHECK if all collections are already created, if not create them
-foreach ($collections as $collection) {
-	echo "creating collection: `{$collection}`... ";
-	$collectionObj = $db->createCollection($collection);
-	if ($collectionObj instanceof MongoCollection) {
-		echo "done\n";
-	} else {
-		echo "failed";
-		exit(1);
-	}
-}
+// CHECK if all tables are created
+$tableNameTests    = 'tests';
+$tableNameSummary  = 'summary';
+$tableNameRequests = 'requests';
+$tables            = $mysqlHelper->getAllTableNamesFromSchema($dbName);
+$allTablesCreated  = in_array($tableNameTests, $tables);
+$allTablesCreated  = $allTablesCreated && in_array($tableNameSummary, $tables);
+$allTablesCreated  = $allTablesCreated && in_array($tableNameRequests, $tables);
 
 // FINISH
-echo "installation was successful...\n";
+if ($allTablesCreated) {
+	echo "installation was successful...\n";
+} else {
+	echo "installation was partial... Some tables could not be created...\n";
+}
+
 
 // ##################### functions ##################### //
 function validateConfigs() {
 	$valid = true;
 
-	$host = Configs::get('mongohost');
-	$port = Configs::get('mongoport');
-	$db   = Configs::get('mongodb');
-	$key  = Configs::get('apikey');
+	$host    = Configs::get('mysqlhost');
+	$user    = Configs::get('mysqluser');
+	$port    = Configs::get('mysqlport');
+	$db      = Configs::get('mysqldb');
+	$key     = Configs::get('apikey');
+	$wptHost = Configs::get('wpt.host');
 
-	if (empty($host) || empty($port) || empty($db) || empty($key)) {
-		echo "Please check all four(host,port,db,key) values are set in Config.php. Exiting...\n";
+	if (empty($host) || empty($port) || empty($db) || empty($user) || empty($wptHost)) {
+		echo "Please check all five(host,port,db,user,wpt.host) values are set in Config.php. Exiting...\n";
 		$valid = false;
+	} else if (empty($key) && $wptHost === 'http://www.webpagetest.org') {
+		echo "`key` is required for public WPT instance(http://www.webpagetest.org). Exiting...\n";
 	} else {
 		echo str_pad("Host: ", 6, " ", STR_PAD_LEFT) . $host . "\n";
 		echo str_pad("Port: ", 6, " ", STR_PAD_LEFT) . $port . "\n";

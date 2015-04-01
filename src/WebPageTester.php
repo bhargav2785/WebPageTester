@@ -12,6 +12,7 @@ require_once dirname(dirname(__FILE__)) . '/vendor/autoload.php';
 
 use Helpers\CommonHelper;
 use Helpers\SpecHelper;
+use Helpers\Constants as C;
 
 /**
  * Class WebPageTester
@@ -53,17 +54,31 @@ class WebPageTester extends CommonHelper
 
 		$this->__debug("Testing url: {$url}");
 
-		$options['k']   = $this->key;
-		$options['url'] = $url;
+		$options[C::REQUEST_PARAM_K]   = $this->key;
+		$options[C::REQUEST_PARAM_URL] = $url;
 
 		if ($this->getTestOptionsObj()->isValidRequest($url, $options)) {
 			$this->getTestOptionsObj()->setUrlOptions($options);
-			$response                 = $this->getTestOptionsObj()->requestTestUrl();
-			$response['specFilePath'] = $specFilePath;
-			$this->_saveResponseForLater($response);
+			$response = $this->getTestOptionsObj()->requestTestUrl();
+
+			$requestOptions                                   = $this->getTestOptionsObj()->getFilteredOptions();
+			$requestOptions[C::REQUEST_PARAM_TEST_ID]         = $response['data']['testId'];
+			$requestOptions[C::REQUEST_PARAM_STATUS_CODE]     = $response['statusCode'];
+			$requestOptions[C::REQUEST_PARAM_STATUS_TEXT]     = $response['statusText'];
+			$requestOptions[C::REQUEST_PARAM_PROCESSED]       = $response['processed'];
+			$requestOptions[C::REQUEST_PARAM_SPEC_FILEPATH]   = $specFilePath;
+			$requestOptions[C::REQUEST_PARAM_OWNER_KEY]       = $response['data']['ownerKey'];
+			$requestOptions[C::REQUEST_PARAM_JSON_URL]        = $response['data']['jsonUrl'];
+			$requestOptions[C::REQUEST_PARAM_XML_URL]         = $response['data']['xmlUrl'];
+			$requestOptions[C::REQUEST_PARAM_USER_URL]        = $response['data']['userUrl'];
+			$requestOptions[C::REQUEST_PARAM_SUMMARY_CSV_URL] = $response['data']['summaryCSV'];
+			$requestOptions[C::REQUEST_PARAM_DETAIL_CSV_URL]  = $response['data']['detailCSV'];
+			$requestOptions[C::REQUEST_PARAM_REQUEST_TIME]    = $response['requestTime'];
+
+			$this->_saveRequestForLater($requestOptions);
 
 			if ($this->getNeedToSave()) {
-				$this->_saveTest($response);
+				$this->_saveTest($requestOptions);
 				$this->__debug("Test saved successfully.");
 				$this->__debug(str_repeat("-", $this->c));
 			} else {
@@ -125,23 +140,23 @@ class WebPageTester extends CommonHelper
 	}
 
 	/**
-	 * @param array $results
+	 * @param array $request
 	 *
-	 * Wrapper around database save action for the results
+	 * Wrapper around database save action for the request
 	 */
-	private function _saveTest(array $results) {
-		$this->getMongoObj()->saveTest($results);
+	private function _saveTest(array $request) {
+		$this->getStorageHelperObj()->saveRequest($request);
 	}
 
 	/**
-	 * @param array $response
+	 * @param array $request
 	 *
 	 * Cache the response locally for later use
 	 */
-	private function _saveResponseForLater(array $response) {
-		if (!empty($response['data']['testId'])) {
-			$testId                           = $response['data']['testId'];
-			$this->responsesByTestId[$testId] = $response;
+	private function _saveRequestForLater(array $request) {
+		if (!empty($request[C::REQUEST_PARAM_TEST_ID])) {
+			$testId                           = $request[C::REQUEST_PARAM_TEST_ID];
+			$this->responsesByTestId[$testId] = $request;
 		}
 	}
 
@@ -155,14 +170,14 @@ class WebPageTester extends CommonHelper
 			return true;
 		}
 
-		$responses     = $this->getResponsesByTestId();
-		$responseCount = count($responses);
+		$requests      = $this->getResponsesByTestId();
+		$responseCount = count($requests);
 
 		$this->__debug(PHP_EOL . str_repeat("~", $this->c));
 		$this->__debug("Begin verification process...({$responseCount})");
 		$this->__debug(str_repeat("~", $this->c));
 
-		foreach ($responses as $testId => $testResponse) {
+		foreach ($requests as $testId => $testRequest) {
 			$this->__debug("Checking the status of testId: {$testId}");
 			$this->_validateResponseByTestId($testId);
 		}
@@ -242,14 +257,14 @@ class WebPageTester extends CommonHelper
 	private function _handleValidationForFinishedTest($code, $testId) {
 		$this->__debug(str_repeat(' ', 5) . "Test execution finished({$code}).");
 		$this->__debug(str_repeat(' ', 10) . "Now validating the response.");
-		$responsesByIds = $this->getResponsesByTestId();
-		$testResponse   = $responsesByIds[$testId];
+		$requestsByIds = $this->getResponsesByTestId();
+		$testRequest   = $requestsByIds[$testId];
 
-		$jsonUrl        = $testResponse['data']['jsonUrl'];
+		$jsonUrl        = $testRequest[C::REQUEST_PARAM_JSON_URL];
 		$apiResponseObj = json_decode(file_get_contents($jsonUrl));
 		$this->_translateRunsFromObjectToArray($apiResponseObj);
 
-		$specFile = $testResponse['specFilePath'];
+		$specFile = $testRequest[C::REQUEST_PARAM_SPEC_FILEPATH];
 		$isUrl    = filter_var($specFile, FILTER_VALIDATE_URL);
 
 		$schemaJsonResponse = '';
