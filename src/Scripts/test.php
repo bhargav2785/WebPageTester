@@ -54,6 +54,12 @@ if ($optsCount > 0) {
 	if (isset($opts['save'])) {
 		$wpt->setNeedToSave(true);
 		$wpt->setNeedToDownload(true);
+
+		if(!isset($opts['check'])){
+			debug("Option --save must be used with --check.", 2);
+			printUsage();
+			finish(true);
+		}
 	}
 
 	// --check for checking the required fields/criteria based on json-schema
@@ -121,15 +127,15 @@ function debug($message, $type = null) {
 }
 
 function printUsage() {
-	debug("\nUsage: run.php [-u http://www.example.com] [-f urls.txt] [-m master.txt] [--save|--check|--options]");
+	debug("\nUsage: test.php [-u http://www.example.com] [-f urls.txt] [-m master.txt] [--save --check [--options] ]");
 	debug("     use -h or --help for help.");
 	debug("     use -u for a single url test");
 	debug("     use -f for multiple url test in a single file.");
 	debug("     use -m for multiple file test. Each file can have multiple urls.");
 	debug("     use -s for spec file location. Only to be used when both (-u and --check) are provided.");
-	debug("     use --save to save request results into the database.");
+	debug("     use --save to save request results into the database. To be used with --check only");
 	debug("     use --check to validate response against json-schema validator.");
-	debug("     use --options to supply test options to WebPageTest tool.");
+	debug("     use --options to supply test options to WebPageTest tool(comma separated key-value pairs).");
 }
 
 function finish($success = true) {
